@@ -50,8 +50,19 @@ userSchema.pre('save', function (next) {
          next()
       });
     });
+  } else {
+    next()
   }
 })
+
+userSchema.methods.comparePassword = function(plainPassword, cb) {
+  // plainPassword를 암호화하여 암호화된 비밀번호와 비교 
+
+  bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
+    if (err) return cb(err),
+      cb(null, isMatch)
+  })
+}
 
 const User = mongoose.model('User', userSchema)
 module.exports = { User };
