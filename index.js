@@ -4,6 +4,7 @@ const port = 3000
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const config = require('./config/key');
+const { auth } = require('./middleware/auth');
 const { User } = require("./models/User"); 
 
 // application/x-www-from-urlencoded (코드를 분석해서 가져옴)
@@ -25,7 +26,7 @@ app.get('/', (req, res) => {
 })
 
 
-app.post('/register', (req, res) => {
+app.post('/api/users/register', (req, res) => {
   // 회원가입시 필요한 정보를 client에서 가져와 데이터베이스에 입력
 
   const user = new User(req.body)
@@ -38,7 +39,7 @@ app.post('/register', (req, res) => {
   })
 })
 
-app.post('/login', (req, res) => {
+app.post('/api/users/login', (req, res) => {
     // 요청된 이메일을 데이터베이스에서 존재하는지 확인
     User.findOne({ email: req.body.email }, (err, user) => {
       if (!user) {
@@ -63,9 +64,22 @@ app.post('/login', (req, res) => {
         })
       })
     })
-
 })
 
+app.get('/api/users/auth', auth, (req, res) => {
+  // Auth가 true인 경우
+
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true, // role 0 일반유저
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
+  })
+})
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
